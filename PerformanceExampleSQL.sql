@@ -1,0 +1,72 @@
+USE MyRandomDataBase
+
+-- Ok, begin by creating some sample data set: 
+
+SELECT TOP 100000 NEWID() AS ID,
+	  'CodingExample' AS ColA, 
+	  'PreformanceIsEverything' AS ColB
+INTO #T1
+FROM SomeRandomTable -- anything goes, just minimum number of rows = 100.000
+
+CREATE TABLE #T2 (ID_1 UNIQUEIDENTIFIER, ID_2 UNIQUEIDENTIFIER, ORDERYEAR INT, INFO VARCHAR (80))
+
+-- Now suppose some customers placed an order and for whatever reason, there ID ended up in column ID_1.
+
+INSERT INTO #T2
+SELECT TOP 20000 ID, 
+	  NULL, 
+	  '2016',
+	  ColA + ' ' + ColB
+FROM #T1
+ORDER BY ID 
+
+-- As a result of bad design, let's say that for a different order year, ID ended up in column ID_2.
+
+INSERT INTO #T2
+SELECT TOP 20000 NULL, 
+	  ID, 
+	  '2017',
+	  ColA + ' ' + ColB
+FROM #T1
+ORDER BY ID DESC
+
+-- The challenge at hand:
+-- We want to join table one on table two, joining on ID.
+-- As we saw, ID can be found in two columns of table 2, ID_1 andID_2.
+
+
+-- Option 1: INNER JOIN USING OR
+
+SELECT * 
+FROM #T1 AS Customers
+INNER JOIN #T2 AS Orders ON Customers.ID = Orders.ID_1 OR Customers.ID = Orders.ID_2;
+
+-- OK, that took a while for my small dataset to load. 
+-- Imagine how long that would take when size of the dataset gets more serious. 
+
+
+-- Option 2: Common Table Expression combined with UNION ALL.
+-- Let's rewrite that join into two separate joins.
+
+WITH CTE_1 AS 
+
+(
+    SELECT * 
+    FROM #T1 AS Customers
+    INNER JOIN #T2 AS Orders ON Customers.ID = Orders.ID_1
+)
+
+, CTE_2 AS 
+
+(
+    SELECT * 
+    FROM #T1 AS Customers
+    INNER JOIN #T2 AS Orders ON Customers.ID = Orders.ID_2
+)
+
+SELECT * FROM CTE_1
+UNION ALL
+SELECT * FROM CTE_2
+
+-- So, to be fair, this involved a little more coding.
+-- But hey, in my environment, this query ran over 100 times faster!! 
