@@ -14,7 +14,7 @@
 USE MyDataBase
 
 
-SELECT LEFT (CAST (CONVERT (VARCHAR, GETDATE(), 112) AS INT) - CAST (CONVERT (VARCHAR, PERS_DoB, 112) AS INT), 2) AS Age
+SELECT (0 + CONVERT (CHAR(8), GETDATE(), 112) - CONVERT (CHAR(8), PERS_DoB, 112)) / 10000 AS Age
 
 -- So, let’s say we have a table T_Person and we would like to find all people aged over 24.
 -- Comparing an scalar function, using logic mentioned above to the inline select statement, would give this:
@@ -22,9 +22,9 @@ SELECT LEFT (CAST (CONVERT (VARCHAR, GETDATE(), 112) AS INT) - CAST (CONVERT (VA
 SET STATISTICS TIME ON
 
 
-SELECT LEFT (CAST (CONVERT (VARCHAR, GETDATE(), 112) AS INT) - CAST (CONVERT (VARCHAR, PERS_DoB, 112) AS INT), 2) AS Age
+SELECT (0 + CONVERT (CHAR(8), GETDATE(), 112) - CONVERT (CHAR(8), PERS_DoB, 112)) / 10000 AS Age
 FROM T_Person
-WHERE LEFT (CAST (CONVERT (VARCHAR, GETDATE(), 112) AS INT) - CAST (CONVERT (VARCHAR, PERS_DoB, 112) AS INT), 2) > 24
+SELECT (0 + CONVERT (CHAR(8), GETDATE(), 112) - CONVERT (CHAR(8), PERS_DoB, 112)) / 10000 AS Age > 24
 
 -- CPU time = 5850 ms,  elapsed time = 7855 ms.
 
